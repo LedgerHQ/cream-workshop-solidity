@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./Connect4Engine.sol";
 import "./librairies/UncheckedMath.sol";
 
@@ -17,16 +18,18 @@ error NoGainsToWithdraw();
 error WithdrawFailed();
 error PlayerCannotBeTheSame();
 
+
+// TODO: init for constructor
 /// @title This is a simple connect4 game that allows two players to create a game and play against each other
-contract LedgerConnect4 is Ownable, Connect4Engine {
+contract LedgerConnect4 is Initializable, Ownable, Connect4Engine {
     // constants/immutable game variables
-    uint256 private immutable payAmount;
-    uint32 private immutable claimWindow;
-    uint8 private immutable fees;
+    uint256 private payAmount;
+    uint32 private claimWindow;
+    uint8 private fees;
 
     // state variables
-    uint256 private nextGameId = 1;
-    uint256 private nextPlayerId = 1;
+    uint256 private nextGameId;
+    uint256 private nextPlayerId;
 
     struct Game {
         uint256 id;
@@ -101,17 +104,22 @@ contract LedgerConnect4 is Ownable, Connect4Engine {
     );
 
     /// @notice Initialize the contract by setting the immutable variables
+    /// @dev The first three variables aren't flagged as immutable because it's impossible to
+    ///      use the keyword outside of a constructor. We don't use constructor because we use the
+    ///      proxy pattern.
     /// @param _payAmount the required amount to play a game (in gwei)
     /// @param _claimWindow the required time player has to wait before claiming a win (in minutes)
     /// @param _fees the fees to pay to the contract (in percent)
-    constructor(
+    function initialize(
         uint256 _payAmount,
         uint32 _claimWindow,
         uint8 _fees
-    ) {
+    ) public initializer {
         payAmount = _payAmount * 1 gwei;
         claimWindow = _claimWindow * 1 minutes;
         fees = _fees > 100 ? 100 : _fees;
+        nextGameId = 1;
+        nextPlayerId = 1;
     }
 
     /// @notice This function is internally called by the onlyLiveGame modifier

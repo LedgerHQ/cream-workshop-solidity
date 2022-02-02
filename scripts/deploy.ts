@@ -6,12 +6,12 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const Connect4 = await ethers.getContractFactory("Connect4");
-  const connect4 = await Connect4.deploy(10, ethers.utils.parseEther("0.001"));
+  const Factory = await ethers.getContractFactory("LedgerConnect4");
+  const contract = await Factory.deploy(100_000_000, 10, 5);
 
-  await connect4.deployed();
+  await contract.deployed();
 
-  console.log(`Connect4 deployed to: ${connect4.address}`);
+  console.log(`Contract deployed to: ${contract.address}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
